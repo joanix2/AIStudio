@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  angular-app:
+    build: ./@ANGULAR_PROJECT_NAME@
+    ports:
+      - '4200:4200'
+    volumes:
+      - ./@ANGULAR_PROJECT_NAME@:/app
+      - /app/node_modules
+    command: npm start
+  dotnet-api:
+    build: ./@DOTNET_PROJECT_NAME@
+    ports:
+      - '5000:80'
+    volumes:
+      - ./@DOTNET_PROJECT_NAME@:/app
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

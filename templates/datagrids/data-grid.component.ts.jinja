@@ -1,0 +1,55 @@
+import { Component, Input, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { MatTableDataSource } from '@angular/material/table';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+
+@Component({
+  selector: 'app-generic-data-grid',
+  templateUrl: './generic-data-grid.component.html',
+  styleUrls: ['./generic-data-grid.component.css']
+})
+export class GenericDataGridComponent implements OnInit {
+
+  @Input() apiUrl!: string;  // L'URL de l'API est passée comme input
+  @Input() actions: boolean = true;  // Afficher les actions ou non
+  displayedColumns: string[] = [];  // Colonnes à afficher
+  dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.fetchData();
+  }
+
+  // Fonction pour récupérer les données de l'API et configurer les colonnes dynamiquement
+  fetchData(): void {
+    this.http.get<any[]>(this.apiUrl)
+      .pipe(
+        catchError(error => {
+          console.error('Erreur lors de la récupération des données:', error);
+          return of([]);  // Retourne un tableau vide en cas d'erreur
+        })
+      )
+      .subscribe(data => {
+        if (data && data.length > 0) {
+          // Détecter dynamiquement les colonnes à partir des clés du premier objet DTO
+          this.displayedColumns = Object.keys(data[0]);
+          
+          // Ajouter une colonne pour les actions si l'option actions est activée
+          if (this.actions) {
+            this.displayedColumns.push('actions');
+          }
+          
+          // Charger les données dans la table
+          this.dataSource.data = data;
+        }
+      });
+  }
+
+  // Exemple de fonction pour gérer la suppression (peut être adaptée selon l'API)
+  deleteRow(id: number): void {
+    console.log(`Suppression de l'élément avec l'ID ${id}`);
+    // Implémenter ici la logique pour supprimer l'élément via l'API (si nécessaire)
+  }
+}
